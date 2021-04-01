@@ -20,6 +20,11 @@ public enum ResourceEnum {
     SQL_EMPLOYEE("/sql/employee", ".sql"),
 
     /**
+     * Example 資料庫
+     */
+    SQL_EXAMPLE("/sql/example", ".sql"),
+
+    /**
      * Eip 資料庫
      */
     SQL_EIP("/sql/eip", ".sql");

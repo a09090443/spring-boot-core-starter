@@ -42,13 +42,7 @@ public class ExampleServiceTest extends TestBase {
     @AfterEach
     public void deleteRecord() {
         Gleepf record = exampleServiceImpl.findByEE010("AB12345678");
-        exampleServiceImpl.saveGleepf(record);
-    }
-
-    @Test
-    public void findGleepfTest(){
-        Gleepf record = exampleServiceImpl.findByEE010("AB12345678");
-        System.out.println(record);
+        exampleServiceImpl.delGleepf(record);
     }
 
     @Test
@@ -59,6 +53,12 @@ public class ExampleServiceTest extends TestBase {
         exampleServiceImpl.updateGleepf(record);
         Gleepf newRecord = exampleServiceImpl.findByEE010("AB12345678");
         System.out.println(newRecord.getEe120());
+    }
+
+    @Test
+    public void findGleepfTest(){
+        Gleepf record = exampleServiceImpl.findByEE010("AB12345678");
+        System.out.println(record);
     }
 
 }

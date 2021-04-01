@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: spring-boot-core-starter
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    import: data-source.properties, resources.properties
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+# 配置Tomcat編碼
+server:
+  tomcat:
+    uri-encoding: UTF-8
+  port: 8080

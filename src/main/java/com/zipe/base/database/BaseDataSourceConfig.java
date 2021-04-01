@@ -1,12 +1,10 @@
 package com.zipe.base.database;
 
-import com.zipe.base.config.DataSourcePropertyConfig;
 import com.zaxxer.hikari.HikariConfig;
+import com.zipe.base.config.DataSourcePropertyConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-
-import java.util.Properties;
 
 public abstract class BaseDataSourceConfig {
     protected Environment env;
@@ -44,13 +42,4 @@ public abstract class BaseDataSourceConfig {
         return config;
     }
 
-    protected Properties hibernateSetting() {
-        Properties jpaProperties = new Properties();
-        jpaProperties.put("hibernate.hbm2ddl.auto", env.getProperty("spring.jpa.hibernate.ddl-auto"));
-        jpaProperties.put("hibernate.show-sql", env.getProperty("spring.jpa.show-sql"));
-        jpaProperties.put("hibernate.dialect", env.getProperty("spring.jpa.hibernate.dialect"));
-        jpaProperties.put("hibernate.jdbc.batch_size", env.getProperty("spring.jpa.jdbc.batch_size"));
-        jpaProperties.put("hibernate.generate_statistics", env.getProperty("spring.jpa.generate_statistics"));
-        return jpaProperties;
-    }
 }

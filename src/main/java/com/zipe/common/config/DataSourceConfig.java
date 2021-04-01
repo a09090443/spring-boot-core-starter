@@ -1,5 +1,7 @@
 package com.zipe.common.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import com.zipe.base.config.DataSourcePropertyConfig;
 import com.zipe.base.database.BaseDataSourceConfig;
 import com.zipe.base.database.DataSourceHolder;
@@ -8,14 +10,11 @@ import com.zipe.base.model.DynamicDataSourceConfig;
 import com.zipe.util.StringConstant;
 import com.zipe.util.crypto.Base64Util;
 import com.zipe.util.crypto.CryptoUtil;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,7 +32,6 @@ import java.util.Objects;
 
 @Configuration
 @EnableAspectJAutoProxy
-@PropertySource({"classpath:data-source.properties"})
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.zipe",
@@ -108,7 +106,6 @@ public class DataSourceConfig extends BaseDataSourceConfig {
         factory.setDataSource(dataSource());
         factory.setPackagesToScan("com.zipe");
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        factory.setJpaProperties(hibernateSetting());
 
         return factory;
     }

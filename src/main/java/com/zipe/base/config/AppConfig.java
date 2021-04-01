@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.format.FormatterRegistry;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Locale;
 
 @Configuration
-@PropertySource({"classpath:resources.properties"})
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @ComponentScan(basePackages = {"com.zipe"})
 @EnableWebMvc
@@ -83,6 +81,7 @@ public class AppConfig implements WebMvcConfigurer {
 	@Bean
 	public VelocityUtil velocityUtil() {
 		VelocityUtil velocityUtil = new VelocityUtil();
+		System.out.println(env.getProperty("template.path"));
 		velocityUtil.setDir(env.getProperty("template.path"));
 		velocityUtil.initClassPath();
 		return velocityUtil;

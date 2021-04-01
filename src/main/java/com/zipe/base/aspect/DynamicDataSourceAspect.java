@@ -20,10 +20,8 @@ import java.util.Objects;
 @Component
 @Order(-1)// 保證該AOP在@Transactional之前執行
 public class DynamicDataSourceAspect {
-    @Pointcut("@annotation(com.zipe.base.annotation.DS) " + "|| @within(com.zipe.base.annotation.DS)")
-    public void dataSourcePointCut(){
-
-    }
+    @Pointcut("@within(com.zipe.base.annotation.DS) || @annotation(com.zipe.base.annotation.DS)")
+    public void dataSourcePointCut(){}
 
     @Around("dataSourcePointCut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
