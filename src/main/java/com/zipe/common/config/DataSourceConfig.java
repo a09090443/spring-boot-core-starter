@@ -13,7 +13,6 @@ import com.zipe.util.crypto.CryptoUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -23,16 +22,14 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Configuration
-@EnableAspectJAutoProxy
-@EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.zipe",
         entityManagerFactoryRef = "multiEntityManager",
@@ -82,14 +79,16 @@ public class DataSourceConfig extends BaseDataSourceConfig {
     public DataSource dataSource() {
 
         Map<Object, Object> dataSourceMap = new HashMap<>();
-        dynamicDataSource.getDataSourceMap().forEach( (k, v) -> {
-            if(!v.getUrl().toLowerCase().contains("as400")){
-                dataSourceMap.put(k, createDataSource(v));
-            }else{
-                dataSourceMap.put(k, createAS400DataSource(v));
-            }
+        Optional.ofNullable(dynamicDataSource.getDataSourceMap()).ifPresent(dataSource -> {
+            dataSource.forEach((k, v) -> {
+                if (!v.getUrl().toLowerCase().contains("as400")) {
+                    dataSourceMap.put(k, createDataSource(v));
+                } else {
+                    dataSourceMap.put(k, createAS400DataSource(v));
+                }
 
-            DataSourceHolder.dataSourceNames.add(k);
+                DataSourceHolder.dataSourceNames.add(k);
+            });
         });
         DynamicDataSource dataSource = new DynamicDataSource();
         //設定資料來源對映
@@ -103,10 +102,11 @@ public class DataSourceConfig extends BaseDataSourceConfig {
     @Bean(name = "multiEntityManager")
     public LocalContainerEntityManagerFactoryBean multiEntityManager() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        DataSource dataSource = dataSource();
+
         factory.setDataSource(dataSource());
         factory.setPackagesToScan("com.zipe");
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-
         return factory;
     }
 
