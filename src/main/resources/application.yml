@@ -1,6 +1,10 @@
 spring:
   application:
     name: spring-boot-core-starter
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
   main:
     allow-bean-definition-overriding: true
   config:
@@ -15,3 +19,5 @@ server:
   tomcat:
     uri-encoding: UTF-8
   port: 8080
+  servlet:
+    context-path: /spring-boot-core-starter
