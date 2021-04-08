@@ -7,6 +7,8 @@ import com.zipe.common.security.service.LoginSuccessHandler;
 import com.zipe.common.security.service.LogoutSuccessHandler;
 import com.zipe.common.security.service.SessionListener;
 import com.zipe.util.StringConstant;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,92 +26,128 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
-	private Environment env;
+    @Autowired
+    private Environment env;
 
-	@Autowired
-	private CustomAuthenticationProvider customAuthenticationProvider;
+    @Autowired
+    private CustomAuthenticationProvider customAuthenticationProvider;
 
-	@Autowired
-	private LdapUserDetailsService ldapUserDetailsService;
+    @Autowired
+    private LdapUserDetailsService ldapUserDetailsService;
 
-	@Autowired
-	private LoginSuccessHandler loginSuccessHandler;
+    @Autowired
+    private LoginSuccessHandler loginSuccessHandler;
 
     @Autowired
     private LoginFailureHandler loginFailureHandler;
 
-	@Autowired
-	private LogoutSuccessHandler logoutSuccessHandler;
+    @Autowired
+    private LogoutSuccessHandler logoutSuccessHandler;
 
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-//		http.
-//				authorizeRequests()
-//				.anyRequest() //對象為所有網址
-//				.authenticated() //存取必須通過驗證
-//				.and()
-//				.formLogin() //若未不符合authorize條件，則產生預設login表單
-//				.and()
-//				.httpBasic(); //產生基本表單
-		http.csrf().disable();
-		http.authorizeRequests()
-	        .antMatchers("/resources/**", "/static/**").permitAll()
-			.anyRequest().authenticated()
-			.and()
-			.formLogin()
-			.loginPage("/login")
-			.usernameParameter("username")
-			.passwordParameter("password")
-			.permitAll()
-			.successHandler(loginSuccessHandler)
-			.failureHandler(loginFailureHandler)
-			.and()
-			.logout()
-			.deleteCookies("JSESSIONID")
-            .clearAuthentication(true)
-            .invalidateHttpSession(true)
-            .permitAll()
-			.logoutSuccessHandler(logoutSuccessHandler)
-			.and()
-			.sessionManagement().invalidSessionUrl("/login")
-			.maximumSessions(2).expiredUrl("/login").sessionRegistry(sessionRegistry());
-	}
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        String enabled = env.getProperty("security.enabled");
+        if (Objects.equals(enabled, StringConstant.TRUE.toLowerCase())) {
+            allowAllByConditions(http);
+        } else {
+            allowAll(http);
+        }
+    }
 
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) {
-		if (Objects.equals(env.getProperty("ldap.enabled"), StringConstant.TRUE.toLowerCase())) {
-			auth.authenticationProvider(ldapUserDetailsService);
-		} else {
-			auth.authenticationProvider(customAuthenticationProvider);
-		}
-	}
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
+        if (Objects.equals(env.getProperty("ldap.enabled"), StringConstant.TRUE.toLowerCase())) {
+            auth.authenticationProvider(ldapUserDetailsService);
+        } else {
+            auth.authenticationProvider(customAuthenticationProvider);
+        }
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public AuthenticationTrustResolver getAuthenticationTrustResolver() {
-		return new AuthenticationTrustResolverImpl();
-	}
+    @Bean
+    public AuthenticationTrustResolver getAuthenticationTrustResolver() {
+        return new AuthenticationTrustResolverImpl();
+    }
 
-	@Bean
-	public SessionRegistry sessionRegistry() {
-		return new SessionRegistryImpl();
-	}
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
 
-	@Bean
-	public HttpSessionEventPublisher httpSessionEventPublisher() {
-		return new SessionListener();
-	}
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new SessionListener();
+    }
+
+    private void allowAll(HttpSecurity http) throws Exception {
+        http.csrf().disable().authorizeRequests().anyRequest().permitAll();
+    }
+
+    private void allowAllByConditions(HttpSecurity http) throws Exception {
+        String allowUri = env.getProperty("allow.uri");
+        if (null == allowUri) {
+            throw new Exception("allow.uri must be setting while security.enabled is ture");
+        }
+        String[] allowUris = Arrays.stream(allowUri.split(StringConstant.COMMA)).map(String::trim).toArray(String[]::new);
+        if (ArrayUtils.isEmpty(allowUris)) {
+            throw new Exception("allow.uri can not empty while security.enabled is ture");
+        }
+        http.csrf().disable();
+        http.authorizeRequests()
+                .antMatchers(allowUris).permitAll()
+                .anyRequest().authenticated();
+
+        String loginUri = env.getProperty("login.uri");
+        String loginUsernameField = env.getProperty("login.form.username.field.name");
+        String loginPasswordField = env.getProperty("login.form.password.field.name");
+        if (StringUtils.isBlank(loginUri)) {
+            http.httpBasic()
+                    .and()
+                    .formLogin()
+                    .permitAll()
+                    .successHandler(loginSuccessHandler)
+                    .failureHandler(loginFailureHandler).and()
+                    .logout()
+                    .deleteCookies("JSESSIONID")
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .permitAll()
+                    .logoutSuccessHandler(logoutSuccessHandler)
+                    .and()
+                    .sessionManagement().invalidSessionUrl(loginUri)
+                    .maximumSessions(2).expiredUrl(loginUri).sessionRegistry(sessionRegistry());
+        } else {
+            http.formLogin()
+                    .loginPage(loginUri)
+                    .usernameParameter(Optional.ofNullable(loginUsernameField).orElse("username"))
+                    .passwordParameter(Optional.ofNullable(loginPasswordField).orElse("password"))
+                    .permitAll()
+                    .successHandler(loginSuccessHandler)
+                    .failureHandler(loginFailureHandler)
+                    .and()
+                    .logout()
+                    .deleteCookies("JSESSIONID")
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .permitAll()
+                    .logoutSuccessHandler(logoutSuccessHandler)
+                    .and()
+                    .sessionManagement().invalidSessionUrl(loginUri)
+                    .maximumSessions(2).expiredUrl(loginUri).sessionRegistry(sessionRegistry());
+        }
+    }
 
 }

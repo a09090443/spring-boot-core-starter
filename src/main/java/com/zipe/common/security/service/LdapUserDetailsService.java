@@ -44,13 +44,15 @@ public class LdapUserDetailsService extends CommonLoginProcess {
      * @param password
      * @return
      */
+    @Override
     public UsernamePasswordAuthenticationToken verifyNormalUser(String loginId, String password) {
         LdapUtil ldapUtil = null;
         String ldapIp = env.getProperty("ldap.ip");
         String domain = env.getProperty("ldap.domain");
         String port = env.getProperty("ldap.port");
         String dn = env.getProperty("ldap.dn");
-        String fullLoginId = loginId.split(StringConstant.AT).length > 1 ? loginId : loginId + StringConstant.AT + domain; // 帳號如無域名自動加入
+        // 帳號如無域名自動加入
+        String fullLoginId = loginId.split(StringConstant.AT).length > 1 ? loginId : loginId + StringConstant.AT + domain;
         Attributes attrs;
         LdapContext ctx;
         LdapUser ldapUser;
@@ -59,7 +61,7 @@ public class LdapUserDetailsService extends CommonLoginProcess {
             ctx = ldapUtil.getLdapContext();
             attrs = ldapUtil.loginLdap();
             ldapUser = convertLdapUser(loginId, attrs, ctx);
-        }catch (AuthenticationException ae){
+        } catch (AuthenticationException ae) {
             log.warn(messageSource.getMessage("login.access.error.message", null, LocaleContextHolder.getLocale()));
             throw new BadCredentialsException(messageSource.getMessage("login.access.error.message", null, LocaleContextHolder.getLocale()));
         } catch (NamingException ne) {

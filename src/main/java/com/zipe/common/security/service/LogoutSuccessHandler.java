@@ -2,7 +2,9 @@ package com.zipe.common.security.service;
 
 import com.zipe.util.UserInfoUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.stereotype.Service;
@@ -20,8 +22,11 @@ public class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
     private final HttpSession session;
 
     @Autowired
-    public LogoutSuccessHandler(HttpSession session) {
-        setDefaultTargetUrl("/login");
+    public LogoutSuccessHandler(HttpSession session, Environment env) {
+        String loginUri = env.getProperty("login.uri");
+        if(StringUtils.isNotBlank(loginUri)){
+            setDefaultTargetUrl(loginUri);
+        }
         setAlwaysUseDefaultTargetUrl(true);
         this.session = session;
     }

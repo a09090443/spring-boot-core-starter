@@ -2,43 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<profiles>
-		<profile>
-			<id>sit</id>
-			<properties>
-				<profile>sit</profile>
-			</properties>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-		</profile>
-		<profile>
-			<id>uat</id>
-			<properties>
-				<profile>uat</profile>
-			</properties>
-		</profile>
-		<profile>
-			<id>pro</id>
-			<properties>
-				<profile>pro</profile>
-			</properties>
-		</profile>
-	</profiles>
-
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.4.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.fglife</groupId>
-	<artifactId>template</artifactId>
-	<version>0.1</version>
-	<packaging>war</packaging>
-	<name>template</name>
-	<description>Fglife spring template</description>
+	<groupId>com.zipe</groupId>
+	<artifactId>core</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>spring-boot-core-starter</name>
+	<description>spring-boot-core-starter</description>
 
 	<properties>
 		<java.version>11</java.version>
@@ -548,7 +522,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>template</finalName>
+		<finalName>spring-boot-core-starter</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -558,76 +532,12 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<encoding>${project.reporting.outputEncoding}</encoding>
 					<compilerArguments>
 						<extdirs>${project.basedir}/lib</extdirs>
 					</compilerArguments>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.coderplus.maven.plugins</groupId>
-				<artifactId>copy-rename-maven-plugin</artifactId>
-				<version>1.0.1</version>
-				<executions>
-					<execution>
-						<id>rename-file</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>rename</goal>
-						</goals>
-						<configuration>
-							<fileSets>
-								<fileSet>
-									<sourceFile>${project.build.outputDirectory}/data-source_${profile}.properties</sourceFile>
-									<destinationFile>${project.build.outputDirectory}/data-source.properties</destinationFile>
-								</fileSet>
-								<fileSet>
-									<sourceFile>${project.build.outputDirectory}/resources_${profile}.properties</sourceFile>
-									<destinationFile>${project.build.outputDirectory}/resources.properties</destinationFile>
-								</fileSet>
-							</fileSets>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<phase>compile</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<delete>
-									<fileset dir="${project.build.outputDirectory}" includes="*_*.properties" />
-								</delete>
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.1</version>
-				<configuration>
-					<warName>${project.artifactId}</warName>
-					<webResources>
-						<resource>
-							<directory>/lib</directory>
-							<targetPath>WEB-INF/lib</targetPath>
-							<includes>
-								<include>**/*.jar</include>
-							</includes>
-						</resource>
-					</webResources>
-					<outputDirectory>D:/tmp/</outputDirectory>
 				</configuration>
 			</plugin>
 			<plugin>

@@ -32,7 +32,7 @@ import java.util.Locale;
 
 @Configuration
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
-@ComponentScan(basePackages = {"com.zipe"})
+@ComponentScan
 public class AppConfig implements WebMvcConfigurer {
 
 	private final Environment env;

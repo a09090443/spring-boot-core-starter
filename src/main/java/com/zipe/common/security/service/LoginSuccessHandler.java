@@ -7,7 +7,9 @@ import com.zipe.enums.UserStatusEnum;
 import com.zipe.util.DateTimeUtils;
 import com.zipe.util.UserInfoUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @Slf4j
-@Service("loginSuccessHandler")
+@Service
 public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
     private final UserService sysUserService;
@@ -27,10 +29,13 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     private final HttpSession session;
 
     @Autowired
-    public LoginSuccessHandler (UserService sysUserService, HttpSession session) {
+    public LoginSuccessHandler (UserService sysUserService, HttpSession session, Environment env) {
         this.sysUserService = sysUserService;
         this.session = session;
-        setDefaultTargetUrl("/dashboard");
+        String defaultMainPage = env.getProperty("default.main.page.uri");
+        if(StringUtils.isNotBlank(defaultMainPage)){
+            setDefaultTargetUrl(defaultMainPage);
+        }
         setAlwaysUseDefaultTargetUrl(false);
     }
 
