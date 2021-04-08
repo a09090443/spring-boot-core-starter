@@ -1,13 +1,16 @@
-<!doctype html>
+<%--
+  Created by IntelliJ IDEA.
+  User: B04575
+  Date: 2021/4/8
+  Time: 下午 02:22
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-	<%@ include file="/WEB-INF/jsp/common/global.jsp"%>
-	<title><s:message code="system.name" text='電子發票作業平台' /></title>
-	<script>
-		$(function () {
-		});
-	</script>
+    <title>Title</title>
 </head>
-<%@ include file="/WEB-INF/jsp/layout/header.jsp"%>
-<h1><s:message code="menu.index.root" text='首頁' /></h1>
-<%@ include file="/WEB-INF/jsp/layout/footer.jsp"%>
+<body>
+<h1>This is dashboard!!</h1>
+</body>
+</html>

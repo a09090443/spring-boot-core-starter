@@ -35,6 +35,8 @@ import java.util.Optional;
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final String DEFAULT_LOGIN_PAGE_URI = "/login";
+
     @Autowired
     private Environment env;
 
@@ -127,8 +129,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .permitAll()
                     .logoutSuccessHandler(logoutSuccessHandler)
                     .and()
-                    .sessionManagement().invalidSessionUrl(loginUri)
-                    .maximumSessions(2).expiredUrl(loginUri).sessionRegistry(sessionRegistry());
+                    .sessionManagement().invalidSessionUrl(DEFAULT_LOGIN_PAGE_URI)
+                    .maximumSessions(2).expiredUrl(DEFAULT_LOGIN_PAGE_URI).sessionRegistry(sessionRegistry());
         } else {
             http.formLogin()
                     .loginPage(loginUri)
