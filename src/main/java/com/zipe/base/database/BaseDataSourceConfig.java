@@ -12,7 +12,7 @@ public abstract class BaseDataSourceConfig {
     protected DataSourcePropertyConfig dynamicDataSource;
 
     @Autowired
-    public BaseDataSourceConfig(Environment env, DataSourcePropertyConfig dynamicDataSource){
+    public BaseDataSourceConfig(Environment env, DataSourcePropertyConfig dynamicDataSource) {
         this.env = env;
         this.dynamicDataSource = dynamicDataSource;
     }
@@ -20,10 +20,14 @@ public abstract class BaseDataSourceConfig {
     @Bean
     protected HikariConfig baseHikariConfig() {
         HikariConfig config = new HikariConfig();
-        config.addDataSourceProperty("cachePrepStmts", "true"); //是否自定義配置，為true時下面兩個引數才生效
-        config.addDataSourceProperty("prepStmtCacheSize", "250"); //連線池大小預設25，官方推薦250-500
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048"); //單條語句最大長度預設256，官方推薦2048
-        config.addDataSourceProperty("useServerPrepStmts", "true"); //新版本MySQL支援伺服器端準備，開啟能夠得到顯著效能提升
+        //是否自定義配置，為true時下面兩個引數才生效
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        //連線池大小預設25，官方推薦250-500
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        //單條語句最大長度預設256，官方推薦2048
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        //新版本MySQL支援伺服器端準備，開啟能夠得到顯著效能提升
+        config.addDataSourceProperty("useServerPrepStmts", "true");
         config.addDataSourceProperty("useLocalSessionState", "true");
         config.addDataSourceProperty("useLocalTransactionState", "true");
         config.addDataSourceProperty("rewriteBatchedStatements", "true");

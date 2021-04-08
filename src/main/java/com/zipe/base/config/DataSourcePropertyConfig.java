@@ -18,12 +18,14 @@ import java.util.Map;
 public class DataSourcePropertyConfig {
 
     private String primary;
+    private String entityScan;
     private Map<String, DynamicDataSourceConfig> dataSourceMap;
 
     @Bean("dynamicDataSource")
     public DataSourcePropertyConfig dynamicDataSource(){
         DataSourcePropertyConfig dataSourcePropertyConfig = new DataSourcePropertyConfig();
         dataSourcePropertyConfig.setPrimary(primary);
+        dataSourcePropertyConfig.setEntityScan(entityScan);
         dataSourcePropertyConfig.setDataSourceMap(dataSourceMap);
         return dataSourcePropertyConfig;
     }

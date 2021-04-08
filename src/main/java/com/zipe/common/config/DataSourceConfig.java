@@ -37,28 +37,30 @@ import java.util.Optional;
 )
 public class DataSourceConfig extends BaseDataSourceConfig {
 
-    DataSourceConfig(Environment env, DataSourcePropertyConfig dynamicDataSource){
+    DataSourceConfig(Environment env, DataSourcePropertyConfig dynamicDataSource) {
         super(env, dynamicDataSource);
     }
 
-    private DataSource createDataSource(DynamicDataSourceConfig dynamicDataSource){
-        baseHikariConfig().setJdbcUrl(dynamicDataSource.getUrl());                               //資料來源
-        baseHikariConfig().setUsername(dynamicDataSource.getUsername());                         //使用者名稱
+    private DataSource createDataSource(DynamicDataSourceConfig dynamicDataSource) {
+        //資料來源
+        baseHikariConfig().setJdbcUrl(dynamicDataSource.getUrl());
+        //使用者名稱
+        baseHikariConfig().setUsername(dynamicDataSource.getUsername());
         String dbPassword = dynamicDataSource.getPa55word();
 
         if (Objects.requireNonNull(env.getProperty("encrypt.enabled")).equalsIgnoreCase(StringConstant.TRUE)) {
             CryptoUtil cryptoUtil = new CryptoUtil(new Base64Util());
             dbPassword = cryptoUtil.decode(dbPassword);
         }
-
-        baseHikariConfig().setPassword(dbPassword);                                              //密碼
+        //密碼
+        baseHikariConfig().setPassword(dbPassword);
 
         baseHikariConfig().setDriverClassName(dynamicDataSource.getDriverClassName());
 
         return new HikariDataSource(baseHikariConfig());
     }
 
-    private DataSource createAS400DataSource(DynamicDataSourceConfig dynamicDataSource){
+    private DataSource createAs400DataSource(DynamicDataSourceConfig dynamicDataSource) {
         // 因 AS400 使用 Hikari 額外設定時會發生錯誤，所以只有基本設定
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dynamicDataSource.getUrl());                                           //資料來源
@@ -84,7 +86,7 @@ public class DataSourceConfig extends BaseDataSourceConfig {
                 if (!v.getUrl().toLowerCase().contains("as400")) {
                     dataSourceMap.put(k, createDataSource(v));
                 } else {
-                    dataSourceMap.put(k, createAS400DataSource(v));
+                    dataSourceMap.put(k, createAs400DataSource(v));
                 }
 
                 DataSourceHolder.dataSourceNames.add(k);
@@ -102,10 +104,9 @@ public class DataSourceConfig extends BaseDataSourceConfig {
     @Bean(name = "multiEntityManager")
     public LocalContainerEntityManagerFactoryBean multiEntityManager() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-        DataSource dataSource = dataSource();
 
         factory.setDataSource(dataSource());
-        factory.setPackagesToScan("com.zipe");
+        factory.setPackagesToScan(dynamicDataSource.getEntityScan());
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         return factory;
     }
