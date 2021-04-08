@@ -1,10 +1,10 @@
 package com.zipe.common.security.service;
 
+import com.zipe.common.config.SecurityPropertyConfig;
 import com.zipe.util.UserInfoUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.stereotype.Service;
@@ -22,9 +22,9 @@ public class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
     private final HttpSession session;
 
     @Autowired
-    public LogoutSuccessHandler(HttpSession session, Environment env) {
-        String loginUri = env.getProperty("login.uri");
-        if(StringUtils.isNotBlank(loginUri)){
+    public LogoutSuccessHandler(HttpSession session, SecurityPropertyConfig securityPropertyConfig) {
+        String loginUri = securityPropertyConfig.getLoginUri();
+        if (StringUtils.isNotBlank(loginUri)) {
             setDefaultTargetUrl(loginUri);
         }
         setAlwaysUseDefaultTargetUrl(true);
@@ -37,13 +37,13 @@ public class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
         destroyLoginUserInfo();
 
         if (authentication != null) {
-            log.debug("user:" + authentication.getPrincipal().toString() + "logout" + request.getContextPath());
+            log.debug("user:{}, logout:{}", authentication.getPrincipal().toString(), request.getContextPath());
         }
 
         super.onLogoutSuccess(request, response, authentication);
     }
 
-    private void destroyLoginUserInfo () {
+    private void destroyLoginUserInfo() {
         String userId = UserInfoUtil.loginUserId();
         session.removeAttribute(userId);
     }

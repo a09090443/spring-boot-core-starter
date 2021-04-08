@@ -1,9 +1,8 @@
 package com.zipe.common.security.service;
 
+import com.zipe.common.config.SecurityPropertyConfig;
 import com.zipe.common.model.LdapUser;
 import com.zipe.common.service.UserService;
-import com.zipe.employee.model.Personnel;
-import com.zipe.employee.service.EmployeeService;
 import com.zipe.exception.LdapException;
 import com.zipe.util.LdapUtil;
 import com.zipe.util.StringConstant;
@@ -23,7 +22,6 @@ import javax.naming.directory.DirContext;
 import javax.naming.ldap.LdapContext;
 import java.util.Hashtable;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,8 +31,8 @@ public class LdapUserDetailsService extends CommonLoginProcess {
                            PasswordEncoder passwordEncoder,
                            Environment env,
                            MessageSource messageSource,
-                           EmployeeService employeeServiceImpl) {
-        super(sysUserService, passwordEncoder, env, messageSource, employeeServiceImpl);
+                           SecurityPropertyConfig securityPropertyConfig) {
+        super(sysUserService, passwordEncoder, env, messageSource, securityPropertyConfig);
     }
 
     /**
@@ -84,7 +82,9 @@ public class LdapUserDetailsService extends CommonLoginProcess {
         // 如使用 AD 帳號登入時需要域名需將域名移除
         String[] userNameSplit = fullLoginId.split(StringConstant.AT);
 
-        sysUserService.addUser(ldapUser);
+        if (securityPropertyConfig.getRecordUserLogonEnabled().equalsIgnoreCase(StringConstant.TRUE)) {
+            sysUserService.addUser(ldapUser);
+        }
 
         return new UsernamePasswordAuthenticationToken(userNameSplit[0], password, null);
     }
@@ -94,8 +94,7 @@ public class LdapUserDetailsService extends CommonLoginProcess {
         LdapUser ldapUser = new LdapUser();
         ldapUser.setUserId(userId);
         ldapUser.setIsEnabled(StringConstant.SHORT_YES);
-        Personnel employee = employeeServiceImpl.findEmployeeByEmpNo(userId);
-        ldapUser.setEmail(Optional.ofNullable(employee.getPnEmail1()).orElse(envInfo.get("java.naming.security.principal").toString()));
+        ldapUser.setEmail(envInfo.get("java.naming.security.principal").toString());
         ldapUser.setLdapDn(getAttrValue(attrs, "distinguishedName"));
         return ldapUser;
     }

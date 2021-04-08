@@ -1,5 +1,6 @@
 package com.zipe.common.security.service;
 
+import com.zipe.common.config.SecurityPropertyConfig;
 import com.zipe.common.service.UserService;
 import com.zipe.employee.service.EmployeeService;
 import com.zipe.enums.UserEnum;
@@ -30,19 +31,19 @@ abstract class CommonLoginProcess implements AuthenticationProvider {
 
     protected final PasswordEncoder passwordEncoder;
 
-    protected final EmployeeService employeeServiceImpl;
+    protected final SecurityPropertyConfig securityPropertyConfig;
 
     @Autowired
     CommonLoginProcess(UserService sysUserService,
                        PasswordEncoder passwordEncoder,
                        Environment env,
                        MessageSource messageSource,
-                       EmployeeService employeeServiceImpl){
+                       SecurityPropertyConfig securityPropertyConfig){
         this.sysUserService = sysUserService;
         this.passwordEncoder = passwordEncoder;
         this.env = env;
         this.messageSource = messageSource;
-        this.employeeServiceImpl = employeeServiceImpl;
+        this.securityPropertyConfig = securityPropertyConfig;
     }
 
     @Override

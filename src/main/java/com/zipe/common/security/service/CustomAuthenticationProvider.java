@@ -1,8 +1,8 @@
 package com.zipe.common.security.service;
 
+import com.zipe.common.config.SecurityPropertyConfig;
 import com.zipe.common.model.LdapUser;
 import com.zipe.common.service.UserService;
-import com.zipe.employee.service.EmployeeService;
 import com.zipe.util.StringConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -16,15 +16,15 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 
 @Slf4j
-@Service("customAuthenticationProvider")
+@Service
 public class CustomAuthenticationProvider extends CommonLoginProcess {
 
     CustomAuthenticationProvider(UserService sysUserService,
                                  PasswordEncoder passwordEncoder,
                                  Environment env,
                                  MessageSource messageSource,
-                                 EmployeeService employeeServiceImpl) {
-        super(sysUserService, passwordEncoder, env, messageSource, employeeServiceImpl);
+                                 SecurityPropertyConfig securityPropertyConfig) {
+        super(sysUserService, passwordEncoder, env, messageSource, securityPropertyConfig);
     }
 
     /**
@@ -34,6 +34,7 @@ public class CustomAuthenticationProvider extends CommonLoginProcess {
      * @param password
      * @return
      */
+    @Override
     public UsernamePasswordAuthenticationToken verifyNormalUser(String loginId, String password) {
         LdapUser ldapUserEntity = sysUserService.findUserByUserId(loginId);
 

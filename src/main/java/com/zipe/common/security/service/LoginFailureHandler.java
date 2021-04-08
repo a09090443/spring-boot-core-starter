@@ -1,17 +1,18 @@
 package com.zipe.common.security.service;
 
+import com.zipe.common.config.SecurityPropertyConfig;
 import com.zipe.common.model.ErrorLog;
 import com.zipe.common.model.LdapUserLog;
 import com.zipe.common.service.UserService;
 import com.zipe.enums.UserStatusEnum;
 import com.zipe.exception.LdapException;
 import com.zipe.util.DateTimeUtils;
+import com.zipe.util.StringConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
@@ -33,11 +34,14 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     private final UserService sysUserServiceImpl;
 
+    private final SecurityPropertyConfig securityPropertyConfig;
+
     @Autowired
-    public LoginFailureHandler(MessageSource messageSource, UserService sysUserServiceImpl, Environment env) {
+    public LoginFailureHandler(MessageSource messageSource, UserService sysUserServiceImpl, SecurityPropertyConfig securityPropertyConfig) {
         this.messageSource = messageSource;
         this.sysUserServiceImpl = sysUserServiceImpl;
-        String loginUri = env.getProperty("login.uri");
+        this.securityPropertyConfig = securityPropertyConfig;
+        String loginUri = securityPropertyConfig.getLoginUri();
         if (StringUtils.isNotBlank(loginUri)) {
             setDefaultFailureUrl(loginUri);
         }
@@ -83,10 +87,12 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
         ldapUserLog.setUserId(loginId);
         ldapUserLog.setStatus(UserStatusEnum.FAIL.desc);
         ldapUserLog.setTime(DateTimeUtils.getDateNow());
-        try {
-            sysUserServiceImpl.addUserLogonRecord(ldapUserLog);
-        } catch (Exception e) {
-            log.error(messageSource.getMessage("login.user.save.fail.record.error", null, currentLocale));
+        if (securityPropertyConfig.getRecordUserLogonEnabled().equalsIgnoreCase(StringConstant.TRUE)) {
+            try {
+                sysUserServiceImpl.addUserLogonRecord(ldapUserLog);
+            } catch (Exception e) {
+                log.error(messageSource.getMessage("login.user.save.fail.record.error", null, currentLocale));
+            }
         }
 
         request.setAttribute("error", pojo.getMessage());

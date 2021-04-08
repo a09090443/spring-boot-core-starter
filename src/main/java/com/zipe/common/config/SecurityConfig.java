@@ -6,6 +6,7 @@ import com.zipe.common.security.service.LoginFailureHandler;
 import com.zipe.common.security.service.LoginSuccessHandler;
 import com.zipe.common.security.service.LogoutSuccessHandler;
 import com.zipe.common.security.service.SessionListener;
+import com.zipe.enums.AuthoritzedTypeEnum;
 import com.zipe.util.StringConstant;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +29,6 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
@@ -55,10 +55,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private LogoutSuccessHandler logoutSuccessHandler;
 
+    @Autowired
+    protected SecurityPropertyConfig securityPropertyConfig;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        String enabled = env.getProperty("security.enabled");
-        if (Objects.equals(enabled, StringConstant.TRUE.toLowerCase())) {
+        if (Objects.equals(securityPropertyConfig.getEnabled(), StringConstant.TRUE.toLowerCase())) {
             allowAllByConditions(http);
         } else {
             allowAll(http);
@@ -66,11 +71,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) {
-        if (Objects.equals(env.getProperty("ldap.enabled"), StringConstant.TRUE.toLowerCase())) {
-            auth.authenticationProvider(ldapUserDetailsService);
-        } else {
-            auth.authenticationProvider(customAuthenticationProvider);
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        switch (securityPropertyConfig.getAuthoritzedType()){
+            case LDAP:{
+                auth.authenticationProvider(ldapUserDetailsService);
+                break;
+            }case DB:{
+                auth.authenticationProvider(customAuthenticationProvider);
+                break;
+            }case LOCAL:{
+
+            } default:{
+                auth.inMemoryAuthentication()
+                        .withUser("admin")
+                        .password(passwordEncoder.encode("admin"))
+                        .roles("ADMIN", "USER");
+            }
         }
     }
 
@@ -99,11 +115,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private void allowAllByConditions(HttpSecurity http) throws Exception {
-        String allowUri = env.getProperty("allow.uri");
-        if (null == allowUri) {
+        if (StringUtils.isBlank(securityPropertyConfig.getAllowUri())) {
             throw new Exception("allow.uri must be setting while security.enabled is ture");
         }
-        String[] allowUris = Arrays.stream(allowUri.split(StringConstant.COMMA)).map(String::trim).toArray(String[]::new);
+        String[] allowUris = Arrays.stream(securityPropertyConfig.getAllowUri().split(StringConstant.COMMA)).map(String::trim).toArray(String[]::new);
         if (ArrayUtils.isEmpty(allowUris)) {
             throw new Exception("allow.uri can not empty while security.enabled is ture");
         }
@@ -112,10 +127,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(allowUris).permitAll()
                 .anyRequest().authenticated();
 
-        String loginUri = env.getProperty("login.uri");
-        String loginUsernameField = env.getProperty("login.form.username.field.name");
-        String loginPasswordField = env.getProperty("login.form.password.field.name");
-        if (StringUtils.isBlank(loginUri)) {
+        if (StringUtils.isBlank(securityPropertyConfig.getLoginUri())) {
             http.httpBasic()
                     .and()
                     .formLogin()
@@ -133,9 +145,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .maximumSessions(2).expiredUrl(DEFAULT_LOGIN_PAGE_URI).sessionRegistry(sessionRegistry());
         } else {
             http.formLogin()
-                    .loginPage(loginUri)
-                    .usernameParameter(Optional.ofNullable(loginUsernameField).orElse("username"))
-                    .passwordParameter(Optional.ofNullable(loginPasswordField).orElse("password"))
+                    .loginPage(securityPropertyConfig.getLoginUri())
+                    .usernameParameter(securityPropertyConfig.getLoginFormUsernameFieldName())
+                    .passwordParameter(securityPropertyConfig.getLoginFormPasswordFieldName())
                     .permitAll()
                     .successHandler(loginSuccessHandler)
                     .failureHandler(loginFailureHandler)
@@ -147,8 +159,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .permitAll()
                     .logoutSuccessHandler(logoutSuccessHandler)
                     .and()
-                    .sessionManagement().invalidSessionUrl(loginUri)
-                    .maximumSessions(2).expiredUrl(loginUri).sessionRegistry(sessionRegistry());
+                    .sessionManagement().invalidSessionUrl(securityPropertyConfig.getLoginUri())
+                    .maximumSessions(2).expiredUrl(securityPropertyConfig.getLoginUri()).sessionRegistry(sessionRegistry());
         }
     }
 

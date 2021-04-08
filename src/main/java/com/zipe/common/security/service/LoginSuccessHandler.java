@@ -1,15 +1,16 @@
 package com.zipe.common.security.service;
 
+import com.zipe.common.config.SecurityPropertyConfig;
 import com.zipe.common.model.LdapUserLog;
 import com.zipe.common.service.UserService;
 import com.zipe.common.vo.SysUserVO;
 import com.zipe.enums.UserStatusEnum;
 import com.zipe.util.DateTimeUtils;
+import com.zipe.util.StringConstant;
 import com.zipe.util.UserInfoUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
@@ -28,11 +29,14 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 
     private final HttpSession session;
 
+    private final SecurityPropertyConfig securityPropertyConfig;
+
     @Autowired
-    public LoginSuccessHandler (UserService sysUserService, HttpSession session, Environment env) {
+    public LoginSuccessHandler (UserService sysUserService, HttpSession session, SecurityPropertyConfig securityPropertyConfig) {
         this.sysUserService = sysUserService;
         this.session = session;
-        String defaultMainPage = env.getProperty("default.main.page.uri");
+        this.securityPropertyConfig = securityPropertyConfig;
+        String defaultMainPage = securityPropertyConfig.getDefaultMainPageUri();
         if(StringUtils.isNotBlank(defaultMainPage)){
             setDefaultTargetUrl(defaultMainPage);
         }
@@ -42,14 +46,17 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        saveLoginUserInfo();
+        if (securityPropertyConfig.getRecordUserLogonEnabled().equalsIgnoreCase(StringConstant.TRUE)) {
+            saveLoginUserInfo();
 
-        // 記錄使用者登入時間
-        LdapUserLog ldapUserLog = new LdapUserLog();
-        ldapUserLog.setUserId(UserInfoUtil.loginUserId());
-        ldapUserLog.setStatus(UserStatusEnum.LOGIN.desc);
-        ldapUserLog.setTime(DateTimeUtils.getDateNow());
-        sysUserService.addUserLogonRecord(ldapUserLog);
+            // 記錄使用者登入時間
+            LdapUserLog ldapUserLog = new LdapUserLog();
+            ldapUserLog.setUserId(UserInfoUtil.loginUserId());
+            ldapUserLog.setStatus(UserStatusEnum.LOGIN.desc);
+            ldapUserLog.setTime(DateTimeUtils.getDateNow());
+            sysUserService.addUserLogonRecord(ldapUserLog);
+        }
+
         log.debug("User:" + UserInfoUtil.loginUserId() + "login" + request.getContextPath());
         log.debug("IP:" + getIpAddress(request));
 
