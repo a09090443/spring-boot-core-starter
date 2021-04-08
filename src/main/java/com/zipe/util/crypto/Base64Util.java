@@ -1,6 +1,6 @@
 package com.zipe.util.crypto;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.codec.Base64;
@@ -17,14 +17,17 @@ public class Base64Util implements Crypto {
     public Base64Util() {
     }
 
+    @Override
     public String getEncrypt(String str) {
         return this.getEncrypt(str, (String)null);
     }
 
+    @Override
     public String getDecode(String str) {
         return this.getDecode(str, (String)null);
     }
 
+    @Override
     public String getEncrypt(String str, String charCode) {
         logger.info("into getBase64Encrypt orgString:{}", str);
         if (StringUtils.isBlank(str)) {
@@ -46,6 +49,7 @@ public class Base64Util implements Crypto {
         }
     }
 
+    @Override
     public String getDecode(String str, String charCode) {
         logger.info("into getBase64Decode encString:{}", str);
         if (StringUtils.isBlank(str)) {
