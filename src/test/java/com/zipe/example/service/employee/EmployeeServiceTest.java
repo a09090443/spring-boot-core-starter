@@ -20,7 +20,7 @@ public class EmployeeServiceTest extends TestBase {
     @Autowired
     private EmployeeService employeeServiceImpl;
 
-    @Ignore
+//    @Ignore
     @Test
     public void findEmployeeAndSupervisorTest(){
         String fgNo = "B03925";
@@ -36,6 +36,7 @@ public class EmployeeServiceTest extends TestBase {
         Assert.notNull(personnel, "It will find one record");
     }
 
+    @Ignore
     @Test
     public void saveEmployeeTest(){
         String fgNo = "B04120";

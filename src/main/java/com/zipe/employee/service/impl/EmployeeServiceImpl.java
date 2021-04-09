@@ -26,7 +26,6 @@ import java.util.Optional;
 @Service
 @DS(value="example")
 public class EmployeeServiceImpl implements EmployeeService {
-    private final String SQL_FILE_DIR_KEY = "SQL_EMPLOYEE";
 
     private final EmployeeJDBC jdbc;
 
@@ -40,10 +39,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<UserAndSupervisorEmail> findUserAndSupervisorEmail(String empNo) {
-        Map<String, Object> param = new HashMap<>();
+        Map<String, Object> param = new HashMap<>(16);
         param.put("empNo", empNo);
-        SqlQuery<UserAndSupervisorEmail> sqlQuery = new SqlQuery<>(SQL_FILE_DIR_KEY, "FIND_SUPERVISOR_AND_USER_EMAIL", UserAndSupervisorEmail.class, null, param);
-        ResourceEnum resource = ResourceEnum.valueOf(sqlQuery.getSqlDir()).getResource(sqlQuery.getSqlFileName());
+        SqlQuery<UserAndSupervisorEmail> sqlQuery = new SqlQuery<>("employee", "FIND_SUPERVISOR_AND_USER_EMAIL", UserAndSupervisorEmail.class, null, param);
+        ResourceEnum resource = ResourceEnum.SQL.getResource(sqlQuery.getSqlDir(), sqlQuery.getSqlFileName());
         return jdbc.queryForList(resource, null, sqlQuery.getParams(), UserAndSupervisorEmail.class);
     }
 

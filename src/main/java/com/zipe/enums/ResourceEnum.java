@@ -1,6 +1,7 @@
 package com.zipe.enums;
 
 import com.zipe.util.StringConstant;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 記錄Class path下特定目錄的資源檔位址
@@ -10,26 +11,9 @@ import com.zipe.util.StringConstant;
  */
 public enum ResourceEnum {
 
-    SQL("/sql", ".sql"),
+    SQL("/sql", ".sql");
 
-    SQL_COMMON("/sql/common", ".sql"),
-
-    /**
-     * Employee 資料庫
-     */
-    SQL_EMPLOYEE("/sql/employee", ".sql"),
-
-    /**
-     * Example 資料庫
-     */
-    SQL_EXAMPLE("/sql/example", ".sql"),
-
-    /**
-     * Eip 資料庫
-     */
-    SQL_EIP("/sql/eip", ".sql");
-
-    private final String dir;
+    private String dir;
     private String file;
     private final String extension;
 
@@ -42,8 +26,16 @@ public enum ResourceEnum {
         this.extension = extension;
     }
 
-    public ResourceEnum getResource(String name) {
-        this.file = StringConstant.SLASH + name;
+    public ResourceEnum getResource(String fileName) {
+        this.file = StringConstant.SLASH + fileName;
+        return this;
+    }
+
+    public ResourceEnum getResource(String dir, String fileName) {
+        if (StringUtils.isNotBlank(dir)) {
+            this.dir = this.dir + StringConstant.SLASH + dir;
+        }
+        this.file = StringConstant.SLASH + fileName;
         return this;
     }
 
